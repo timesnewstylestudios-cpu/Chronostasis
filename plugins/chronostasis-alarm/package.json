@@ -1,0 +1,14 @@
+{
+  "name": "chronostasis-alarm",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Exakte Vollbild-Alarme für Chronostasis auf Android (AlarmManager.setAlarmClock).",
+  "type": "module",
+  "main": "index.js",
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  },
+  "license": "CC0-1.0"
+}

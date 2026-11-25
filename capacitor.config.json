@@ -1,0 +1,18 @@
+{
+  "appId": "dev.chronostasis.app",
+  "appName": "Chronostasis",
+  "webDir": "dist",
+  "android": {
+    "useLegacyBridge": true,
+    "appendUserAgent": "Chronostasis/1.0 (freiwillige Uhr; persoenlich)"
+  },
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_chronostasis",
+      "iconColor": "#8d4f24"
+    }
+  }
+}

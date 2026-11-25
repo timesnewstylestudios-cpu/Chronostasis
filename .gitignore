@@ -1,0 +1,11 @@
+node_modules/
+dist/
+/android/
+/ios/
+test-results/
+playwright-report/
+blob-report/
+.DS_Store
+*.apk
+*.ipa
+.capacitor/

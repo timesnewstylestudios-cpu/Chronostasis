@@ -1,0 +1,46 @@
+name: Unsigned iOS IPA
+
+# Manuell. Das Ergebnis ist nicht signiert und lässt sich nicht direkt installieren.
+# AltStore oder SideStore muss es mit einer Apple-ID neu signieren, alle 7 Tage.
+on:
+  workflow_dispatch:
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap add ios
+      - name: Unsigniertes .app packen
+        working-directory: ios/App
+        run: |
+          set -euo pipefail
+          pod install
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/chronostasis-ios" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+          APP="$(find "$RUNNER_TEMP/chronostasis-ios" -type d -name 'App.app' | head -n 1)"
+          test -n "$APP"
+          rm -rf Payload
+          mkdir Payload
+          cp -R "$APP" Payload/
+          zip -r "$GITHUB_WORKSPACE/chronostasis-unsigned.ipa" Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chronostasis-unsigned-ipa
+          path: chronostasis-unsigned.ipa
+          if-no-files-found: error
