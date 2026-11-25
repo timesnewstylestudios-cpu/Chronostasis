@@ -25,9 +25,9 @@ Netz nur, wenn du die Karte oder die Adresssuche öffnest. OpenStreetMap sieht d
 
 Chrome, Seite öffnen, „Zum Startbildschirm“. Benachrichtigungen erlauben. Der Browser kann die Seite schlafen legen. Exakte Alarme und ein Geofence im Hintergrund gibt es so nicht. Die Erinnerung ist verlässlich, solange die Seite offen ist.
 
-### Android, App aus Termux
+### Android, App aus Termux oder Termux Studio
 
-[docs/android-termux.md](docs/android-termux.md). Kurz: Node 20, JDK 21, `pkg install aapt2`, ein Android-SDK unter `~/android-sdk`, dann `bash scripts/build-android-termux.sh`. Die APK ist eine Debug-APK. Danach Benachrichtigungen, Standort inklusive Hintergrund, exakte Alarme, Vollbild-Intent und eine Ausnahme von der Akku-Optimierung erlauben.
+[docs/android-termux.md](docs/android-termux.md). Kurz: Node 20, JDK 21, eine aapt2 für arm64, ein Android-SDK, dann `bash scripts/build-android-termux.sh`. Das Skript erkennt Termux Studio (`~/android-sdk`, JDK unter `$PREFIX/lib/jvm`, aapt2 in `build-tools/36.0.0`) und fällt sonst auf ein gewöhnliches Termux und auf `ANDROID_HOME` zurück. Die APK ist eine Debug-APK. Danach Benachrichtigungen, Standort inklusive Hintergrund, exakte Alarme, Vollbild-Intent und eine Ausnahme von der Akku-Optimierung erlauben.
 
 Die Hülle nutzt `@capacitor/local-notifications` für die Erinnerungskette und die Berechtigung für exakte Alarme. Den Weckzeitpunkt mit Vollbild legt das lokale Plugin `chronostasis-alarm` über `AlarmManager.setAlarmClock`, weil das offizielle Plugin keinen Full-Screen-Intent kennt und `allowWhileIdle` im Doze-Modus nur etwa einmal in neun Minuten feuern darf. Hintergrundpunkte kommen von `@capacitor-community/background-geolocation`: die App muss selbst sehen, ob die Entfernung sinkt und die Richtung zum Ziel zeigt. Ein reines Betreten-Verlassen-Geofence reicht dafür nicht. `@capacitor-community/keep-awake` hält den Bildschirm während der Erinnerung an.
 
@@ -60,7 +60,7 @@ Pull Requests führt `.github/workflows/ci.yml` die Unit-Tests und den Playwrigh
 
 Chronostasis is a voluntary, on-device clock for getting to work or class on time. You enter the commitment. It estimates leave-by and wake time from distance, a mode speed, and your own history (an exponential moving average plus an 85th-percentile buffer). Nagging escalates until you enter the destination radius or answer a fixed question with a real exception. There is no off switch for a day that has already started. Settings that would soften it apply at the next local midnight. Data stays in IndexedDB. Delete and export are in the app. There is no model and no account.
 
-Install the static site as a PWA, or build the Android debug APK in Termux with `scripts/build-android-termux.sh` (`android.aapt2FromMavenOverride` for the arm64 aapt2). Set GitHub Pages to deploy from GitHub Actions. iOS is the Safari Home Screen app, plus an optional unsigned IPA workflow that still needs re-signing every 7 days. Platform limits are spelled out in `docs/ios.md` and `docs/android-termux.md` and are not exceeded here.
+Install the static site as a PWA, or build the Android debug APK in Termux or Termux Studio with `scripts/build-android-termux.sh` (it prints the SDK, JDK, and aapt2 it found). Set GitHub Pages to deploy from GitHub Actions. iOS is the Safari Home Screen app, plus an optional unsigned IPA workflow that still needs re-signing every 7 days. Platform limits are spelled out in `docs/ios.md` and `docs/android-termux.md` and are not exceeded here.
 
 ## Lizenz
 
