@@ -1,46 +1,44 @@
 #!/usr/bin/env bash
-# Debug-APK auf einem arm64-Gerät mit Termux bauen.
+# Debug-APK auf einem arm64-Gerät mit Termux oder Termux Studio bauen.
 # Die Maven-aapt2 ist x86_64 und startet dort nicht. android.aapt2FromMavenOverride
-# zeigt Gradle auf die aapt2 aus pkg install aapt2.
+# zeigt Gradle auf eine aapt2, die auf dem Gerät läuft.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# shellcheck source=lib/android-env.sh
+source "$(dirname "$0")/lib/android-env.sh"
+
 echo "Chronostasis: Android-Debug-APK"
+android_env_detect
+android_env_print
 
-if ! command -v node >/dev/null 2>&1; then
-  echo "Node fehlt. In Termux: pkg install nodejs"
+if [ -z "${ENV_NODE:-}" ]; then
+  echo "Node fehlt. Termux Studio installiert Node nicht."
+  echo "In Termux: pkg install nodejs   (mindestens Node 20)"
   exit 1
 fi
-if ! command -v java >/dev/null 2>&1; then
-  echo "Java fehlt. In Termux: pkg install openjdk-21"
+if [ -z "${ENV_JAVA_HOME:-}" ]; then
+  echo "JDK fehlt. Termux Studio legt es nach \$PREFIX/lib/jvm/java-21-openjdk."
+  echo "Sonst: pkg install openjdk-21   oder JAVA_HOME setzen."
   exit 1
 fi
-
-AAPT2="${AAPT2:-}"
-if [ -z "$AAPT2" ]; then
-  if [ -n "${PREFIX:-}" ] && [ -x "$PREFIX/bin/aapt2" ]; then
-    AAPT2="$PREFIX/bin/aapt2"
-  elif command -v aapt2 >/dev/null 2>&1; then
-    AAPT2="$(command -v aapt2)"
-  fi
-fi
-if [ -z "$AAPT2" ] || [ ! -x "$AAPT2" ]; then
-  echo "aapt2 fehlt. Auf arm64: pkg install aapt2"
-  echo "Oder setze AAPT2=/pfad/zur/arm64-Datei."
+if [ -z "${ENV_AAPT2:-}" ]; then
+  echo "Keine startbare aapt2 gefunden."
+  echo "Termux Studio: \$HOME/android-sdk/build-tools/36.0.0/aapt2 oder \$PREFIX/bin/aapt2-aosp."
+  echo "Nur Termux: pkg install aapt2, oder AAPT2=/pfad/zur/arm64-Datei."
   exit 1
 fi
-if ! "$AAPT2" version >/dev/null 2>&1; then
-  echo "Diese aapt2 startet nicht."
-  echo "Gradle würde sonst eine x86_64-Datei laden. Nutze die Termux-aapt2 über android.aapt2FromMavenOverride."
+if [ -z "${ENV_SDK:-}" ]; then
+  echo "Android-SDK nicht gefunden."
+  echo "Gesucht: \$HOME/android-sdk, \$HOME/Android/Sdk, \$PREFIX/opt/android-sdk, ANDROID_SDK_ROOT, ANDROID_HOME."
+  echo "Ablage: docs/android-termux.md"
   exit 1
 fi
 
-SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/android-sdk}}"
-if [ ! -d "$SDK" ]; then
-  echo "Android-SDK nicht gefunden unter $SDK"
-  echo "Ablage und Pakete: docs/android-termux.md"
-  exit 1
-fi
+export JAVA_HOME="$ENV_JAVA_HOME"
+export ANDROID_HOME="$ENV_SDK"
+export ANDROID_SDK_ROOT="$ENV_SDK"
+export PATH="$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
 
 npm install
 npm run build
@@ -48,10 +46,12 @@ if [ ! -d android ]; then
   npx cap add android
 fi
 npx cap sync android
-node scripts/patch-android.mjs "$AAPT2" "$SDK"
+node scripts/patch-android.mjs "$ENV_AAPT2" "$ENV_SDK"
 chmod +x android/gradlew
 (
   cd android
-  ./gradlew assembleDebug --no-daemon -Pandroid.aapt2FromMavenOverride="$AAPT2"
+  ./gradlew assembleDebug --no-daemon -Pandroid.aapt2FromMavenOverride="$ENV_AAPT2"
 )
 echo "Fertig: android/app/build/outputs/apk/debug/app-debug.apk"
+echo "aapt2 für Gradle: $ENV_AAPT2"
+echo "sdk.dir: $ENV_SDK"
