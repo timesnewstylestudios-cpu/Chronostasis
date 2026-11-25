@@ -1,0 +1,34 @@
+{
+  "name": "chronostasis",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Freiwillige Uhr gegen Zuspätkommen. Lokal, ohne Server, ohne KI.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test test/*.test.js",
+    "test:e2e": "playwright test",
+    "icons": "python3 scripts/gen-icons.py"
+  },
+  "dependencies": {
+    "@capacitor-community/background-geolocation": "^1.2.26",
+    "@capacitor-community/keep-awake": "7.1.0",
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/local-notifications": "^7.0.3",
+    "chronostasis-alarm": "file:plugins/chronostasis-alarm",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/ios": "^7.4.4",
+    "@playwright/test": "^1.56.1",
+    "vite": "^6.4.1"
+  },
+  "license": "CC0-1.0"
+}
